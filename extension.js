@@ -14,7 +14,7 @@ import * as Slider from "resource:///org/gnome/shell/ui/slider.js";
 const Indicator = GObject.registerClass(
   class Indicator extends PanelMenu.Button {
     _init(extension) {
-      super._init(0.0, _("PaperSrc Indicator"));
+      super._init(0.0, _("PaperShell Indicator"));
       this._extension = extension;
 
       // Icon for the panel indicator
@@ -47,8 +47,7 @@ const Indicator = GObject.registerClass(
       });
       sliderItem.add_child(sliderLabel);
 
-      // Default value 0.3 results in 15% actual opacity (0.3 * 0.5)
-      this._slider = new Slider.Slider(0.3);
+      this._slider = new Slider.Slider(0.3); // Default 15% (0.3 * 0.5)
       this._slider.x_expand = true;
       this._slider.connect("notify::value", () => {
         this._extension.setOpacity(this._slider.value);
@@ -67,16 +66,40 @@ const Indicator = GObject.registerClass(
 export default class PaperShellExtension extends Extension {
   enable() {
     this._overlay = null;
+    this._indicator = null;
+    this._overviewShowingId = null;
+    this._overviewHidingId = null;
 
     // Pass the extension instance to the indicator so they can communicate
     this._indicator = new Indicator(this);
     Main.panel.addToStatusArea(this.uuid, this._indicator);
+
+    // Hide the overlay when entering the overview: allows for drag and drop
+    this._overviewShowingId = Main.overview.connect("showing", () => {
+      if (this._overlay) this._overlay.hide();
+    });
+
+    this._overviewHidingId = Main.overview.connect("hiding", () => {
+      // Only show it again if the toggle is actually turned ON
+      if (this._overlay && this._indicator._toggle.state) {
+        this._overlay.show();
+      }
+    });
 
     // Enable the overlay by default when the extension starts
     this.enableOverlay();
   }
 
   disable() {
+    if (this._overviewShowingId) {
+      Main.overview.disconnect(this._overviewShowingId);
+      this._overviewShowingId = null;
+    }
+    if (this._overviewHidingId) {
+      Main.overview.disconnect(this._overviewHidingId);
+      this._overviewHidingId = null;
+    }
+
     this.disableOverlay();
 
     if (this._indicator) {
@@ -91,7 +114,7 @@ export default class PaperShellExtension extends Extension {
     // Create the fullscreen, click-through widget
     this._overlay = new St.Widget({
       style_class: "papersrc-overlay",
-      reactive: false, // Essential: lets you click through it
+      reactive: false, // lets you click through it
       can_focus: false,
       x: 0,
       y: 0,
@@ -105,7 +128,7 @@ export default class PaperShellExtension extends Extension {
       }),
     );
 
-    Main.layoutManager.addChrome(this._overlay);
+    Main.layoutManager.uiGroup.add_child(this._overlay);
 
     // Sync the overlay's initial opacity with the slider's value
     this.setOpacity(this._indicator.getSliderValue());
@@ -120,8 +143,7 @@ export default class PaperShellExtension extends Extension {
 
   setOpacity(value) {
     if (this._overlay) {
-      // SAFETY CAP: The slider (0.0 to 1.0) is multiplied by 0.5
-      // This prevents the screen from becoming 100% opaque/black.
+      // Prevents the screen from becoming 100% opaque/black.
       let safeOpacity = value * 0.5;
       this._overlay.opacity = Math.floor(safeOpacity * 255);
     }
