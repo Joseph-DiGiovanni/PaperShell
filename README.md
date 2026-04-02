@@ -20,7 +20,7 @@ Inspired by research on visual ergonomics, this extension applies a noise textur
 - **Global Overlay:** Seamless, semi-transparent texture across all monitors and displays.
 - **Zero Interference:** Completely click-through; never interferes with your workflow or input.
 - **Advanced Preferences:** Fine-tune texture intensity using the Extension Settings.
-- **High-Performance Rendering:** Uses native Clutter constraints for zero-lag performance on HiDPI and 4K displays.
+- **High-Performance Rendering:** Uses native Clutter constraints and a cached tiled pattern for low-overhead rendering on HiDPI and 4K displays.
 
 #### Filter Off
 
@@ -67,7 +67,6 @@ Access the settings by clicking the **Gear Icon** next to PaperShell in the GNOM
 
 - **Texture Intensity:** Adjust the slider to find your perfect balance.
 - **Behavior:** Toggle "Hide in Fullscreen" or "Sync with Night Light" to automate your environment.
-- **Custom Textures:** You can still replace the `noise.png` inside the extension folder with any image of your choice for a personalized feel.
 
 ![settings](./README_images/settings.png)
 
