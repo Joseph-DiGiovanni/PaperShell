@@ -6,11 +6,11 @@ PaperShell is a GNOME Shell extension that draws a light paper-like grain over t
 
 #### Before:
 
-![filter_off](./README_images/filter_off.png)
+![filter_off](./README_images/filter_off.jpg)
 
 #### After:
 
-![filter_on](./README_images/filter_on.png)
+![filter_on](./README_images/filter_on.jpg)
 
 ## 📥 Installation
 
